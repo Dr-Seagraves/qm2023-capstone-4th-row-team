@@ -26,7 +26,7 @@ What is the impact of interest rates on the U.S. housing market?
 
 Housing is one of the most interest-rate-sensitive sectors of the economy. When the Federal Reserve raises interest rates, borrowing becomes more expensive, which can reduce mortgage demand, slow home construction, and put downward pressure on home prices. Conversely, lower interest rates typically stimulate housing activity.
 
-This project aims to examine whether changes in interest rates—particularly mortgage rates and the federal funds rate—have a statistically significant effect on housing starts, building permits, and home prices in the United States.
+This project aims to examine whether changes in interest rates—particularly mortgage rates and the federal funds rate have a statistically significant effect on housing starts, building permits, and home prices in the United States.
 
 ## 2. Datasets We Plan to Use
 
