@@ -18,44 +18,25 @@ Semester-long capstone for Statistics II: Data Analytics.
 
 Run `python code/config_paths.py` to verify paths.
 
-# Project Planning Update
+1. Research Question
+The Economic Shield: Have efficiency gains made home budgets "immune" to heating oil volatility?
 
-## 1. Preliminary Research Question
+Does a freezing winter still "break the bank" for the average family? This project examines if 30 years of home improvements have created a shield for the consumer. We are testing if the link between extreme weather and financial stress is weakening because our homes are finally good enough to "ignore" the outside temperature.
 
-What is the impact of interest rates on the U.S. housing market?
+2. Datasets
+We will use three primary government sources to build this "Resilience Index":
 
-Housing is one of the most interest-rate-sensitive sectors of the economy. When the Federal Reserve raises interest rates, borrowing becomes more expensive, which can reduce mortgage demand, slow home construction, and put downward pressure on home prices. Conversely, lower interest rates typically stimulate housing activity.
+Climate Stress (NOAA): Heating Degree Days (HDD). This measures exactly how hard the weather "pushed" against our homes.
 
-This project aims to examine whether changes in interest rates—particularly mortgage rates and the federal funds rate—have a statistically significant effect on housing starts, building permits, and home prices in the United States.
+Energy Response (EIA): Residential Distillate Fuel Oil Sales. This tracks the actual gallons consumed to fight the cold.
 
-## 2. Datasets We Plan to Use
+Economic Impact (FRED): Real Heating Oil Prices (Nominal prices divided by CPI). This helps us see if people are using less oil because their homes are better, or just because they can't afford it.
 
-All data will be obtained from the Federal Reserve Economic Data (FRED) database maintained by the Federal Reserve Bank of St. Louis.
+3. Empirical Direction
+We will evaluate the "Shield" by looking at the data in three ways:
 
-We plan to use the following monthly U.S. time series:
+The Consumption Slope: We will compare the 1990s to the 2020s. We expect to see that for every 10% increase in cold weather, the corresponding spike in oil buying is much smaller today than it was 30 years ago.
 
-**Interest Rate Variables**
-- 30-Year Fixed Mortgage Rate (MORTGAGE30US)
-- Effective Federal Funds Rate (FEDFUNDS)
-- 10-Year Treasury Rate (DGS10)
+Price vs. Efficiency: We will analyze years with high oil prices. If oil use dropped and stayed low even after prices fell, it proves that homeowners made permanent efficiency upgrades (like new windows) rather than just "suffering through the cold."
 
-**Housing Market Variables**
-- Housing Starts (HOUST)
-- Building Permits (PERMIT)
-- Case-Shiller U.S. National Home Price Index (CSUSHPINSA)
-
-We may also include control variables such as:
-- Unemployment Rate (UNRATE)
-- Consumer Price Index (CPIAUCSL)
-
-## 3. Empirical Direction
-
-We will use regression analysis and graphical analysis to evaluate the relationship between interest rates and housing market outcomes.
-
-Our approach will include:
-- Plotting time trends in interest rates and housing variables
-- Comparing housing activity during periods of rising versus falling rates
-- Running regressions to test whether interest rates significantly affect housing starts and home prices
-- Interpreting the statistical and economic significance of our results
-
-The project will focus on economic interpretation and statistical inference rather than machine learning methods.
+Extreme Weather Stress Test: We will isolate the "Polar Vortex" years. If the total energy cost for a house in a record-breaking cold year today is lower (after inflation) than a "normal" year in 1990, the "Thermal Fortress" theory is proven.
