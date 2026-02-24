@@ -1,61 +1,88 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/gp9US0IQ)
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=22635011&assignment_repo_type=AssignmentRepo)
-# QM 2023 Capstone Project
+# QM 2023 Capstone: The Market Decoupling
 
-Semester-long capstone for Statistics II: Data Analytics.
+This repository contains the data pipeline for our macro-finance research question:
 
-## Project Structure
+**"The Market Decoupling: Has the globalized energy supply chain severed the link between severe US winters and domestic heating oil prices?"**
 
-- **code/** — Python scripts and notebooks. Use `config_paths.py` for paths.
-- **data/raw/** — Original data (read-only)
-- **data/processed/** — Intermediate cleaning outputs
-- **data/final/** — M1 output: analysis-ready panel
-- **results/figures/** — Visualizations
-- **results/tables/** — Regression tables, summary stats
-- **results/reports/** — Milestone memos
-- **tests/** — Autograding test suite
+## Project Overview
+
+This project builds a clean data panel to analyze the relationship between US winter severity and real heating oil prices. It automatically fetches, processes, and merges data from two key sources to create a final, analysis-ready dataset.
 
 
-Run `python code/config_paths.py` to verify paths.
+### Data Sources & Regional Focus
 
-# Project Planning Update
+*   **Economic Data:** Federal Reserve Economic Data (FRED) API
+    *   `APU000072511`: Average Price: Fuel Oil #2 (monthly, national average)
+    *   `CPIAUCSL`: Consumer Price Index for All Urban Consumers (used to calculate real prices)
 
-## 1. Preliminary Research Question
 
-What is the impact of interest rates on the U.S. housing market?
 
-Housing is one of the most interest-rate-sensitive sectors of the economy. When the Federal Reserve raises interest rates, borrowing becomes more expensive, which can reduce mortgage demand, slow home construction, and put downward pressure on home prices. Conversely, lower interest rates typically stimulate housing activity.
+*   **Climate Data:** NOAA Climate Data Online (CDO) Web Services API
+    *   `GSOM` (Global Summary of the Month) dataset
+    *   `HTDD` (Heating Degree Days) for Boston Logan station (WBAN:14739)
 
-This project aims to examine whether changes in interest rates—particularly mortgage rates and the federal funds rate—have a statistically significant effect on housing starts, building permits, and home prices in the United States.
+#### Why Boston Logan?
+Boston Logan is a major weather station in New England, a region with high heating oil usage and severe winters. NOAA provides more complete data for this station, allowing for a richer panel.
 
-## 2. Datasets We Plan to Use
+#### How HDD Is Aggregated
+Heating Degree Days (HDD) are summed for each month at Boston Logan, producing a single monthly value. This is standard for HDD analysis and allows direct comparison to monthly heating oil prices.
 
-All data will be obtained from the Federal Reserve Economic Data (FRED) database maintained by the Federal Reserve Bank of St. Louis.
+## How to Run the Pipeline
 
-We plan to use the following monthly U.S. time series:
+To generate the final dataset, follow these steps:
 
-**Interest Rate Variables**
-- 30-Year Fixed Mortgage Rate (MORTGAGE30US)
-- Effective Federal Funds Rate (FEDFUNDS)
-- 10-Year Treasury Rate (DGS10)
+### 1. Set Up Your Environment
 
-**Housing Market Variables**
-- Housing Starts (HOUST)
-- Building Permits (PERMIT)
-- Case-Shiller U.S. National Home Price Index (CSUSHPINSA)
+Create a `.env` file in the root of this project. This file will store your API keys and should not be committed to Git.
 
-We may also include control variables such as:
-- Unemployment Rate (UNRATE)
-- Consumer Price Index (CPIAUCSL)
+Your `.env` file should look like this:
 
-## 3. Empirical Direction
+```
+FRED_API_KEY="YOUR_FRED_API_KEY_HERE"
+NOAA_TOKEN="YOUR_NOAA_API_TOKEN_HERE"
+```
 
-We will use regression analysis and graphical analysis to evaluate the relationship between interest rates and housing market outcomes.
+*You can obtain a FRED API key [here](https://fred.stlouisfed.org/docs/api/api_key.html).*
+*You can obtain a NOAA API token [here](https://www.ncdc.noaa.gov/cdo-web/token).*
 
-Our approach will include:
-- Plotting time trends in interest rates and housing variables
-- Comparing housing activity during periods of rising versus falling rates
-- Running regressions to test whether interest rates significantly affect housing starts and home prices
-- Interpreting the statistical and economic significance of our results
+### 2. Run the Build Script
 
-The project will focus on economic interpretation and statistical inference rather than machine learning methods.
+
+Execute the main data pipeline script from your terminal:
+
+```bash
+python code/build_analysis_panel.py
+```
+
+### 3. Verify the Output
+
+
+
+The script will perform the following actions:
+1. Ensure the necessary `data/raw`, `data/processed`, and `data/final` directories exist.
+2. Fetch the latest data from the FRED and NOAA APIs.
+3. Clean the data:
+    - FRED: Heating oil price and CPI are merged and real prices calculated (national average).
+
+
+    - NOAA: Heating Degree Days (HDD) values are summed for each month at Boston Logan (WBAN:14739) to produce a single monthly value.
+4. Merge the two datasets into a single time-series panel, aligning Boston Logan's HDD with national heating oil prices.
+5. Save the final output to `data/final/market_decoupling_panel.csv`.
+
+The script will print the final shape of the dataset upon completion.
+
+## Data Cleaning & Merging Details
+
+- **FRED Data:**
+    - Downloaded via API for each month from 1978 onward.
+    - Heating oil price and CPI are merged; real prices are calculated by dividing nominal price by CPI.
+
+
+- **NOAA Data (Boston Logan):**
+    - Downloaded via API for Boston Logan station (WBAN:14739) for each month.
+    - All daily HDD values are summed to produce a single monthly HDD value for Boston Logan.
+- **Merging:**
+    - The two datasets are merged on YearMonth.
+    - The final panel contains: YearMonth, Heating_Oil_Price, CPI, Real_Heating_Oil_Price, Heating_Degree_Days (Boston Logan).
+
+This approach allows analysis of how severe cold snaps in Boston (a high heating oil usage region) relate to national heating oil prices, testing whether the price response to extreme weather has changed over time.
