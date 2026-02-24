@@ -1,91 +1,99 @@
 # QM 2023 Capstone: The Market Decoupling
 
-This repository contains the data pipeline for our macro-finance research question:
+**"Has the globalized energy supply chain severed the link between severe US winters and domestic heating oil prices?"**
 
-**"The Market Decoupling: Has the globalized energy supply chain severed the link between severe US winters and domestic heating oil prices?"**
+## Research Question & Hypothesis
 
-## Project Overview
+Historically, harsh US winters drove heating oil prices higher as local demand surged and supply chains struggled to respond. This project examines whether globalization of energy markets has weakened this relationship over time. As energy supply chains became more integrated internationally and alternative energy sources proliferated, we hypothesize that **the sensitivity of heating oil prices to extreme US winter weather has diminished**.
 
-This project builds a clean data panel to analyze the relationship between US winter severity and real heating oil prices. It automatically fetches, processes, and merges data from two key sources to create a final, analysis-ready dataset.
+## Analytical Approach
 
+### Core Relationship
 
-### Data Sources & Regional Focus
+We analyze the relationship between:
+- **Winter Severity**: Measured by Heating Degree Days (HDD) at Boston Logan Airport
+- **Real Heating Oil Prices**: National average Fuel Oil #2 prices, adjusted for inflation
 
-<<<<<<< HEAD
-*   **Economic Data:** Federal Reserve Economic Data (FRED) API
-    *   `APU000072511`: Average Price: Fuel Oil #2 (monthly, national average)
-    *   `CPIAUCSL`: Consumer Price Index for All Urban Consumers (used to calculate real prices)
+The fundamental question is whether HDD fluctuations predict price movements, and critically, **whether this predictive power has changed over recent decades**.
 
+### Why Boston Logan?
 
+Boston Logan serves as our climate proxy for several analytical reasons:
+1. **Regional Relevance**: New England has historically been the largest heating oil consumption region in the US
+2. **Weather Extremes**: The station captures significant winter severity variation
+3. **Data Quality**: NOAA provides complete, consistent monthly HDD measurements for this location
 
-*   **Climate Data:** NOAA Climate Data Online (CDO) Web Services API
-    *   `GSOM` (Global Summary of the Month) dataset
-    *   `HTDD` (Heating Degree Days) for Boston Logan station (WBAN:14739)
+By pairing regional climate data with national prices, we can test whether local weather shocks still drive national market outcomes—or whether markets have decoupled from regional weather patterns.
 
-#### Why Boston Logan?
-Boston Logan is a major weather station in New England, a region with high heating oil usage and severe winters. NOAA provides more complete data for this station, allowing for a richer panel.
+### Temporal Dimension
 
-#### How HDD Is Aggregated
-Heating Degree Days (HDD) are summed for each month at Boston Logan, producing a single monthly value. This is standard for HDD analysis and allows direct comparison to monthly heating oil prices.
+The analysis spans 2000-2025, a period of significant energy market transformation:
+- Expansion of global LNG trade
+- Growth of alternative heating sources (natural gas, electricity)
+- Increased pipeline capacity and storage infrastructure
+- More sophisticated commodity futures markets
 
-## How to Run the Pipeline
+If globalization has insulated prices from local weather, we expect:
+- **Weaker correlation** between HDD and prices in recent years
+- **Reduced price volatility** during extreme weather events
+- **Delayed or muted price responses** to cold snaps
 
-To generate the final dataset, follow these steps:
+### Variables in the Analysis Panel
 
-### 1. Set Up Your Environment
+The final dataset contains monthly observations with:
+- `YearMonth`: Time identifier
+- `Heating_Degree_Days`: Monthly HDD at Boston Logan (higher = colder)
+- `Heating_Oil_Price`: Nominal price per gallon (USD)
+- `CPI`: Consumer Price Index for inflation adjustment
+- `Real_Heating_Oil_Price`: Inflation-adjusted price (primary outcome variable)
 
-Create a `.env` file in the root of this project. This file will store your API keys and should not be committed to Git.
+## Interpretation Framework
 
-Your `.env` file should look like this:
+This analysis provides evidence for or against the "market decoupling" hypothesis:
+
+**Evidence FOR decoupling** would include:
+- Declining correlation between HDD and real prices over time
+- Reduced price spikes during high-HDD months in recent years
+- Statistical tests showing structural breaks in the relationship
+
+**Evidence AGAINST decoupling** would include:
+- Persistent strong correlation throughout the time series
+- Similar price responses to weather shocks across decades
+- No significant change in the HDD-price relationship
+
+---
+
+## Running the Analysis Pipeline
+
+To replicate this analysis:
+
+### 1. Configure API Access
+
+Create a `.secrets` file in the project root:
 
 ```
-FRED_API_KEY="YOUR_FRED_API_KEY_HERE"
-NOAA_TOKEN="YOUR_NOAA_API_TOKEN_HERE"
+FRED_API_KEY=your_fred_api_key
+NOAA_API_TOKEN=your_noaa_token
 ```
 
-*You can obtain a FRED API key [here](https://fred.stlouisfed.org/docs/api/api_key.html).*
-*You can obtain a NOAA API token [here](https://www.ncdc.noaa.gov/cdo-web/token).*
+*Obtain keys from [FRED](https://fred.stlouisfed.org/docs/api/api_key.html) and [NOAA CDO](https://www.ncdc.noaa.gov/cdo-web/token).*
 
-### 2. Run the Build Script
-
-
-Execute the main data pipeline script from your terminal:
+### 2. Execute the Pipeline
 
 ```bash
-python code/build_analysis_panel.py
+python code/main_panel.py
 ```
 
-### 3. Verify the Output
+This will:
+- Fetch monthly heating oil prices and CPI from FRED (2000-present)
+- Retrieve Heating Degree Days for Boston Logan from NOAA
+- Calculate real (inflation-adjusted) prices
+- Merge climate and economic data by month
+- Output the analysis-ready panel to `data/final/final.csv`
 
+### 3. Output
 
+The final panel is saved to [data/final/final.csv](data/final/final.csv) with complete monthly observations where both climate and price data are available.
 
-The script will perform the following actions:
-1. Ensure the necessary `data/raw`, `data/processed`, and `data/final` directories exist.
-2. Fetch the latest data from the FRED and NOAA APIs.
-3. Clean the data:
-    - FRED: Heating oil price and CPI are merged and real prices calculated (national average).
-
-
-    - NOAA: Heating Degree Days (HDD) values are summed for each month at Boston Logan (WBAN:14739) to produce a single monthly value.
-4. Merge the two datasets into a single time-series panel, aligning Boston Logan's HDD with national heating oil prices.
-5. Save the final output to `data/final/market_decoupling_panel.csv`.
-
-The script will print the final shape of the dataset upon completion.
-
-## Data Cleaning & Merging Details
-
-- **FRED Data:**
-    - Downloaded via API for each month from 1978 onward.
-    - Heating oil price and CPI are merged; real prices are calculated by dividing nominal price by CPI.
-
-
-- **NOAA Data (Boston Logan):**
-    - Downloaded via API for Boston Logan station (WBAN:14739) for each month.
-    - All daily HDD values are summed to produce a single monthly HDD value for Boston Logan.
-- **Merging:**
-    - The two datasets are merged on YearMonth.
-    - The final panel contains: YearMonth, Heating_Oil_Price, CPI, Real_Heating_Oil_Price, Heating_Degree_Days (Boston Logan).
-
-This approach allows analysis of how severe cold snaps in Boston (a high heating oil usage region) relate to national heating oil prices, testing whether the price response to extreme weather has changed over time.
 
 
