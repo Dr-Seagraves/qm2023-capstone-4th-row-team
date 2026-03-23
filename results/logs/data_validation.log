@@ -1,0 +1,94 @@
+[2026-02-24 20:44:34] INFO: Loading data from processed files...
+[2026-02-24 20:44:34] PASS: ✓ FRED data loaded: 565 rows
+[2026-02-24 20:44:34] PASS: ✓ NOAA data loaded: 312 rows
+[2026-02-24 20:44:34] PASS: ✓ Merged data loaded: 311 rows
+[2026-02-24 20:44:34] INFO: 
+Starting data validation...
+[2026-02-24 20:44:34] INFO: 
+================================================================================
+[2026-02-24 20:44:34] INFO: DATA QUALITY VALIDATION REPORT
+[2026-02-24 20:44:34] INFO: ================================================================================
+[2026-02-24 20:44:34] INFO: Report generated: 2026-02-24 20:44:34
+[2026-02-24 20:44:34] INFO: 
+--- FRED Data Validation ---
+[2026-02-24 20:44:34] PASS: ✓ All 565 FRED dates are valid format (YYYY-MM)
+[2026-02-24 20:44:34] PASS: ✓ No missing values in FRED data
+[2026-02-24 20:44:34] PASS: ✓ Heating oil prices in reasonable range: $0.53 - $5.97
+[2026-02-24 20:44:34] PASS: ✓ CPI in reasonable range: 67.5 - 326.6
+[2026-02-24 20:44:34] PASS: ✓ Real price calculation verified (correct deflation)
+[2026-02-24 20:44:34] PASS: ✓ No duplicate YearMonth entries
+[2026-02-24 20:44:34] INFO: 
+--- NOAA Data Validation ---
+[2026-02-24 20:44:34] PASS: ✓ All 312 NOAA dates are valid format (YYYY-MM)
+[2026-02-24 20:44:34] PASS: ✓ No missing values in NOAA data
+[2026-02-24 20:44:34] PASS: ✓ No negative HDD values (physically correct)
+[2026-02-24 20:44:34] PASS: ✓ HDD range is reasonable: 0 - 1374
+[2026-02-24 20:44:34] INFO: ℹ 27 zero HDD months (expected for summer): e.g., ['2006-07', '2022-07', '2025-07']
+[2026-02-24 20:44:34] PASS: ✓ No duplicate YearMonth entries
+[2026-02-24 20:44:34] INFO: 
+--- Merged Data Validation ---
+[2026-02-24 20:44:34] PASS: ✓ All expected columns present: ['CPI', 'Heating_Degree_Days', 'Heating_Oil_Price', 'Real_Heating_Oil_Price', 'YearMonth']
+[2026-02-24 20:44:34] PASS: ✓ No missing values in merged data
+[2026-02-24 20:44:34] PASS: ✓ Dates are in chronological order
+[2026-02-24 20:44:34] PASS: ✓ Row count is reasonable: 311 rows
+[2026-02-24 20:44:34] INFO: ℹ Correlation between HDD and Price: -0.0358
+[2026-02-24 20:44:34] INFO: ℹ Moderate correlation suggests independence (good for analysis)
+[2026-02-24 20:44:34] INFO: 
+============================================================
+[2026-02-24 20:44:34] INFO: OUTLIER DETECTION ANALYSIS
+[2026-02-24 20:44:34] INFO: ============================================================
+[2026-02-24 20:44:34] INFO: 
+Heating_Oil_Price:
+[2026-02-24 20:44:34] WARN:   IQR method: 2 outliers detected
+[2026-02-24 20:44:34] INFO:   Range: Q1=2.1265, Q3=3.6160, IQR=1.4895
+[2026-02-24 20:44:34] INFO:   Bounds: [-0.1078, 5.8503]
+[2026-02-24 20:44:34] INFO:   Most extreme values:
+[2026-02-24 20:44:34] INFO:     2022-05: 5.973000
+[2026-02-24 20:44:34] INFO:     2022-06: 5.863000
+[2026-02-24 20:44:34] INFO: 
+Real_Heating_Oil_Price:
+[2026-02-24 20:44:34] WARN:   IQR method: 4 outliers detected
+[2026-02-24 20:44:34] INFO:   Range: Q1=0.0094, Q3=0.0134, IQR=0.0041
+[2026-02-24 20:44:34] INFO:   Bounds: [0.0033, 0.0195]
+[2026-02-24 20:44:34] INFO:   Most extreme values:
+[2026-02-24 20:44:34] INFO:     2008-07: 0.021227
+[2026-02-24 20:44:34] INFO:     2008-06: 0.021102
+[2026-02-24 20:44:34] INFO:     2022-05: 0.020505
+[2026-02-24 20:44:34] PASS: 
+Heating_Degree_Days: ✓ No statistical outliers detected
+[2026-02-24 20:44:34] INFO: 
+============================================================
+[2026-02-24 20:44:34] INFO: SUMMARY STATISTICS
+[2026-02-24 20:44:34] INFO: ============================================================
+[2026-02-24 20:44:34] INFO: 
+FRED Data Summary:
+[2026-02-24 20:44:34] INFO:   Rows: 565
+[2026-02-24 20:44:34] INFO:   Date range: 1978-11 to 2026-01
+[2026-02-24 20:44:34] INFO:   Mean price: $1.99
+[2026-02-24 20:44:34] INFO:   Std dev: $1.17
+[2026-02-24 20:44:34] INFO: 
+NOAA Data Summary:
+[2026-02-24 20:44:34] INFO:   Rows: 312
+[2026-02-24 20:44:34] INFO:   Date range: 2000-01 to 2025-12
+[2026-02-24 20:44:34] INFO:   Mean HDD: 449.0
+[2026-02-24 20:44:34] INFO:   Std dev: 389.1
+[2026-02-24 20:44:34] INFO: 
+Merged Data Summary:
+[2026-02-24 20:44:34] INFO:   Rows: 311
+[2026-02-24 20:44:34] INFO:   Date range: 2000-01 to 2025-12
+[2026-02-24 20:44:34] INFO: 
+============================================================
+[2026-02-24 20:44:34] PASS: ✓ DATA VALIDATION PASSED - Data is ready for analysis
+[2026-02-24 20:44:34] INFO: ============================================================
+[2026-02-24 20:44:34] INFO: 
+Enhancing merged data with analytical features...
+[2026-02-24 20:44:34] PASS: ✓ Data enhancement completed
+[2026-02-24 20:44:34] INFO:   Added columns: Date, Year, Month, Quarter, Price_Change, Price_PctChange, Price_MA3, HDD_Category, HDD_Lag1, HDD_Lag3
+[2026-02-24 20:44:34] PASS: ✓ Enhanced dataset saved: /workspaces/qm2023-capstone-4th-row-team/data/final/final_enhanced.csv
+[2026-02-24 20:44:34] INFO:   Rows: 311, Columns: 15
+[2026-02-24 20:44:34] INFO: 
+Sample of enhanced data (first 5 rows):
+[2026-02-24 20:44:34] INFO: 
+================================================================================
+[2026-02-24 20:44:34] PASS: DATA PIPELINE COMPLETE
+[2026-02-24 20:44:34] INFO: ================================================================================
