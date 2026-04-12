@@ -1,0 +1,12 @@
+Variable,Model1_Baseline,Model2_HC3,Model3_Interaction
+Constant,0.0736* (0.0404),0.0736 (0.0459),0.0630 (0.0463)
+Real Price (t−1)  [$/gal],0.9752*** (0.0117),0.9752*** (0.0159),0.9757*** (0.0159)
+"NEC_HDD (lag 1)   [per HDD, EIA]",1.141e-05 (2.690e-05),1.141e-05 (2.846e-05),2.905e-05 (3.343e-05)
+Heating Season    [Oct–Mar=1],0.0210 (0.0232),0.0210 (0.0253),0.0208 (0.0252)
+Post-2014 Dummy   [shale era],-0.0225 (0.0199),-0.0225 (0.0204),-0.0026 (0.0287)
+HDD × Post-2014   [interaction],—,—,-3.850e-05 (4.557e-05)
+N,310,310,310
+R²,0.9580,0.9580,0.9581
+Adj R²,0.9574,0.9574,0.9574
+SE Type,Standard,HC3 Robust,HC3 Robust
+Entity/Time FE,No / No,No / No,No / No
