@@ -11,3 +11,4 @@ notebook
 nbformat
 ipykernel
 scipy
+scikit-learn

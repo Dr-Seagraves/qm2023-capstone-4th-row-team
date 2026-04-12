@@ -1,21 +1,41 @@
 # Data Dictionary - Final Analysis Panel
 
 **Project:** Market Decoupling - Heating Oil Prices and Winter Weather Analysis  
-**Dataset:** final.csv (final_enhanced.csv includes additional calculated columns)  
-**Observations:** 311 (January 2000 - December 2025)  
-**Data Type:** Monthly time series panel (single location/entity)
+**Primary Dataset:** final_enriched.csv (10 columns — use this for all M2/M3 analysis)  
+**Base Dataset:** final.csv (5 columns — raw pipeline output)  
+**Observations:** 311 (January 2000 – December 2025; October 2025 missing from NOAA)  
+**Data Type:** Monthly time series (single entity; no panel structure)
+
+**Last Updated:** 2026-04-12 (geographic mismatch fix: replaced single-station Boston Logan HDD with EIA population-weighted regional HDD)
 
 ---
 
-## Core Variables (in final.csv)
+## Primary Analysis Variables (in final_enriched.csv)
 
-| Variable Name | Data Type | Format | Range/Values | Units | Source | Description |
-|---------------|-----------|--------|--------------|-------|--------|-------------|
-| YearMonth | String | YYYY-MM | 2000-01 to 2025-12 | — | Merged | Time period identifier (month-year combination) |
-| Heating_Oil_Price | Float64 | Decimal | 0.533 to 5.973 | $/gallon | FRED API: APU000072511 | Nominal (unadjusted for inflation) average price of Fuel Oil #2 (residential heating) at national level |
-| CPI | Float64 | Decimal | 67.5 to 326.6 | Index (1982-84=100) | FRED API: CPIAUCSL | Consumer Price Index for All Urban Consumers used as deflator for real price calculation |
-| Real_Heating_Oil_Price | Float64 | Decimal | 0.005024 to 0.021227 | Price/CPI | Calculated | Inflation-adjusted heating oil price (Heating_Oil_Price ÷ CPI × 100); comparable across time periods |
-| Heating_Degree_Days | Float64 | Decimal | 0.0 to 1374.0 | Degrees Fahrenheit | NOAA API: GHCND:USW00014739 | Cumulative monthly heating degree days at Boston Logan Airport; measures winter severity (higher = colder) |
+| Variable Name | Data Type | Range | Units | Source | Description |
+|---------------|-----------|-------|-------|--------|-------------|
+| YearMonth | String | 2000-01 to 2025-12 | — | Merged | Time period identifier |
+| Heating_Oil_Price | Float64 | 1.112 to 5.973 | $/gallon | FRED APU000072511 | Nominal average price of Fuel Oil #2, national |
+| CPI | Float64 | 168.8 to 326.6 | Index (1982-84=100) | FRED CPIAUCSL | Deflator for real price calculation |
+| Real_Heating_Oil_Price | Float64 | 0.005 to 0.021 | Nominal/CPI ratio | Calculated | Legacy ratio; multiply by CPI_2020 ≈ 258.86 for $/gal |
+| **NEC_HDD** | Float64 | 0 to ~1800 | Degree-days | **EIA STEO ZWHD_NEC** | **PRIMARY DRIVER — New England Census Division (MA/ME/NH/VT/CT/RI) HDD, population-weighted. Matches geographic scope of heating oil consumption (~75% of U.S. use). Use this in all regressions.** |
+| US_HDD | Float64 | 0 to ~1100 | Degree-days | EIA STEO ZWHDPUS | U.S. national average HDD, population-weighted — used as robustness check in M3 |
+| MAC_HDD | Float64 | 0 to ~1400 | Degree-days | EIA STEO ZWHD_MAC | Middle Atlantic (NY/NJ/PA) HDD — additional robustness |
+| Boston_HDD | Float64 | 0.0 to 1374.0 | Degree-days | NOAA GSOM, GHCND:USW00014739 | **Legacy single-station HDD (Boston Logan Airport). Retained for comparison only. Do NOT use as primary driver — single-station measurement error attenuates OLS estimates.** |
+| WTI_Price | Float64 | 16.55 to 133.88 | $/barrel | FRED MCOILWTICO | WTI Crude Oil Price — dominant global price determinant (r = +0.946 with real heating oil price) |
+| HenryHub_Price | Float64 | 1.49 to 13.42 | $/MMBtu | FRED MHHNGSP | Henry Hub Natural Gas Spot Price — substitute fuel price signal |
+
+---
+
+## Base Variables (in final.csv — raw pipeline output)
+
+| Variable Name | Source | Notes |
+|---------------|--------|-------|
+| YearMonth | Merged | |
+| Heating_Oil_Price | FRED APU000072511 | |
+| CPI | FRED CPIAUCSL | |
+| Real_Heating_Oil_Price | Calculated | Nominal/CPI ratio |
+| Heating_Degree_Days | NOAA GSOM USW00014739 | Boston Logan single station; renamed to `Boston_HDD` in final_enriched.csv |
 
 ---
 
@@ -114,10 +134,10 @@
 5. **Weather Categories:** Use `HDD_Category` for non-linear heating demand analysis
 
 ### Limitations
-- **Single Location:** Boston Logan HDD represents New England only, not national weather
+- **Monthly frequency:** Daily cold spikes (polar vortex events) are averaged away; weekly data would reveal sharper short-run effects
 - **Selection Bias:** Analysis restricted to months with both price and HDD data (MCAR assumption)
 - **Confounders:** Prices also reflect geopolitics, speculation, substitution effects (natural gas)
-- **Causality:** Correlation analysis only; cannot infer causal mechanisms
+- **Causality:** Correlation analysis and dynamic OLS; cannot establish clean causal mechanisms without a natural experiment
 
 ---
 

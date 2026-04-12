@@ -1,4 +1,4 @@
-# AI Audit Appendix — Milestone 2
+# AI Audit Appendix — Milestones 2 & 3
 
 **QM 2023 Capstone | 4th Row Team | March 2026**
 
@@ -165,3 +165,122 @@ AI output (geographic mismatch flag, rescaling decision, rolling window choice o
 
 All AI outputs were treated as first drafts subject to human verification and correction.
 Economic interpretations were validated against course materials and external sources.
+
+---
+
+# AI Audit Appendix — Milestone 3
+
+**QM 2023 Capstone | 4th Row Team | April 2026**
+
+---
+
+## Purpose
+
+This section documents all AI tool uses during Milestone 3 (Econometric Models). Per assignment requirements, emphasis is on econometric specification decisions, diagnostic test interpretations, and robustness check design.
+
+---
+
+## AI Tool Uses — M3
+
+### Use 5 — Econometric Specification Design
+
+**Tool:** Claude (claude-sonnet-4-6 via Claude Code CLI)
+
+**Prompt given:**
+> "Read the M3 milestone rubric and the existing codebase. Our dataset is a single monthly time
+> series (no entity dimension) — 311 obs, Jan 2000–Dec 2025. Outcome: Real Heating Oil Price.
+> Driver: HDD (Boston Logan). Key M2 finding: HDD has near-zero raw correlation with price;
+> AR(1) ≈ 0.95. Design and implement capstone_models.py covering Model A (Dynamic OLS with
+> AR(1) + HDD + controls), required diagnostics (Breusch-Pagan, VIF, residual plots), at least
+> 3 robustness checks, and Model B (ML Comparison: OLS vs Random Forest)."
+
+**Output received:**
+A complete `capstone_models.py` script with:
+- Model A: Dynamic OLS in three specifications (standard SE, HC3 robust SE, HDD×Post2014 interaction)
+- ADF stationarity test with interpretation
+- Breusch-Pagan test, VIF, residuals-vs-fitted and Q-Q plots
+- Four robustness checks (SE comparison, lag structures 0–3, crisis-period exclusion, pre/post-2014 subsample)
+- Publication-ready regression table saved to CSV
+- Model B: chronological 80/20 train/test split with OLS vs Random Forest vs naive baseline
+
+**Verification of econometric specification decisions:**
+
+1. **Why Dynamic OLS instead of PanelOLS:** Our data has a single entity (one price series, one weather station). PanelOLS requires multiple entities to estimate entity fixed effects; applying it to one entity is meaningless. Dynamic OLS with a lagged dependent variable is the standard approach for single-entity time series with persistent autocorrelation. We verified this against the textbook treatment (Hamilton 1994, Ch. 17) and the rubric's own guidance ("Dynamic OLS" as an alternative to Fixed Effects).
+
+2. **Why HDD at lag 1:** M2 (Plot 4, lagged correlation analysis) showed the bivariate correlation is near zero at all lags 0–12. Lag 1 is the economically motivated choice (a cold month affects next month's prices through inventory drawdown and forward purchasing). The lag-structure robustness check (Robustness 2) confirms lag selection is not driving results — all lags 0–3 yield p > 0.60.
+
+3. **Why HC3 robust SE:** Breusch-Pagan (LM = 26.40, p < 0.0001) confirms heteroskedasticity. HC3 is preferred over HC1/HC2 in samples of this size because it provides better finite-sample coverage by downweighting leverage points — appropriate given our crisis-period outliers (2008, 2022).
+
+4. **Why include Post2014 dummy instead of time trend:** A linear time trend assumes the price trend is smooth and monotone; our series has a non-monotone super-cycle (rising 2000–2008, falling 2009–2016, rising again). A regime dummy for the shale era (2014 onward) captures the structural level shift identified in M2 without imposing a parametric trend shape.
+
+5. **Why ML Comparison for Model B:** The research question is fundamentally about whether local weather contributes to price variation beyond global commodity cycles. Random Forest feature importance provides a model-free, nonlinear answer: even with full flexibility, HDD gets 0.5% of importance versus 85% for lagged price and 14% for WTI. This directly answers the research question and does not require assuming linearity.
+
+**Critique:**
+The AI correctly flagged that `sm.add_constant` silently skips adding a constant when it detects a near-constant column (Post2014=1 for all test observations, since the test set is 2020–2025). This caused an initial `ValueError: shapes not aligned` that was caught during testing and fixed by manually inserting a `const` column. Without running the script, this bug would not have been caught. All generated code was tested end-to-end before submission.
+
+The AI also correctly identified that a naive baseline (last observed value) R² of -2.73 is not a bug — it reflects that the test period (2020–2025) includes the COVID price collapse and recovery, making a frozen-last-value forecast wildly wrong. This is the correct benchmark to demonstrate that any model needs to track the series, not just hold the last value.
+
+---
+
+### Use 6 — Diagnostic Interpretation
+
+**Tool:** Claude (claude-sonnet-4-6 via Claude Code CLI)
+
+**Prompt given:**
+> "Interpret the M3 diagnostic results: ADF p=0.047 (borderline), BP LM=26.40 p<0.0001,
+> VIF all<1.32, residual plots showing leptokurtic tails and heteroskedastic scatter at high
+> fitted values. Write the diagnostics section of M3_interpretation.md."
+
+**Output received:**
+Interpretation of each diagnostic with: statistical result, implication for inference, fix applied, and confirmation that the fix does not alter the substantive conclusion.
+
+**Verification:**
+- ADF borderline result (p = 0.047): We verified against the critical values printed by statsmodels (5% = -2.871; our statistic = -2.884, just past the threshold). The borderline classification is accurate. The Dynamic OLS AR(1) specification is robust whether the series is I(0) or near-I(1).
+- Kurtosis ≈ 8.2: Confirmed this reflects the 2008 and 2022 tail events. OLS is consistent under non-normal errors; the Gauss-Markov theorem does not require normality. The caveat about finite-sample confidence interval coverage is appropriate.
+- HC3 vs HC1/HC2 distinction: We verified the AI's preference for HC3 against Long & Ervin (2000) "Using Heteroscedasticity Consistent Standard Errors in the Linear Regression Model" — HC3 is recommended for n < 250, but is conservative and appropriate for n = 310 with outlier leverage points.
+
+**Critique:**
+The diagnostic interpretation is economically accurate and appropriately hedged. The AI correctly noted that leptokurtosis does not bias OLS estimates (it affects SEs and CI coverage), which is a common misconception. The note that "OLS is unbiased under non-normality" is correct (Gauss-Markov holds under E[ε|X]=0 and homoskedasticity; normality is only required for exact finite-sample inference).
+
+---
+
+### Use 7 — Robustness Check Design
+
+**Tool:** Claude (claude-sonnet-4-6 via Claude Code CLI)
+
+**Prompt given:**
+> "Design at least 3 robustness checks appropriate for our dynamic OLS model on a single monthly
+> time series. The rubric options are: robust SE, alternative lags, exclude outlier periods,
+> group subsamples. Our main concern is: is the null HDD result real or an artifact of (a) our
+> choice of lag 1, (b) crisis-period heteroskedasticity, or (c) the Post-2014 structural break?"
+
+**Output received:**
+Four robustness checks:
+1. Standard SE vs HC3 (already implemented in Model 1 vs 2)
+2. HDD at lags 0, 1, 2, 3 — all coefficients and p-values
+3. Re-estimate excluding 2008-09 and 2020 crisis years
+4. Pre-2014 vs Post-2014 subsample split
+
+**Verification:**
+- Lag structure: We confirmed that all four lags are economically defensible. Lag 0 = contemporaneous demand effect; lag 1 = next-month delivery pricing; lags 2-3 = longer-horizon forward contract pricing. All are plausible channels.
+- Crisis exclusion: We excluded 2008-09 (GFC) and 2020 (COVID) specifically, not 2022 (Ukraine war), because the research question focuses on the globalization/shale structural change rather than geopolitical shocks. This is a judgment call we made independently of the AI output.
+- Subsample split at 2014: The AI correctly used the shale revolution threshold from M2. We independently confirmed that U.S. crude production surpassed 9 mb/d in late 2014, the year Saudi Arabia declined to cut OPEC quotas — both supply-side events that justify a 2014 break.
+
+**Critique:**
+The AI suggested including a "placebo test" (run DiD as if shock occurred in earlier period). We did not implement this because we are not running a Difference-in-Differences model — our Post2014 dummy is a level-shift control, not a causal treatment effect. We noted this in the interpretation memo (Section: Caveats — Parallel Trends Not Applicable). Adapting AI suggestions to our specific context required human judgment.
+
+---
+
+## M3 Summary of AI Use
+
+| # | Task | Tool | Specification decisions verified by team |
+|---|------|------|------------------------------------------|
+| 5 | capstone_models.py | Claude Code | Dynamic OLS vs PanelOLS; lag choice; HC3 justification; Post2014 vs trend |
+| 6 | Diagnostic interpretation | Claude Code | ADF borderline threshold; HC3 vs HC1/HC2; OLS unbiasedness under non-normality |
+| 7 | Robustness check design | Claude Code | Crisis years to exclude; subsample split date; placebo test inapplicability |
+
+**Total AI-assisted code for M3:** ~280 lines in `capstone_models.py`.
+**Total lines reviewed/corrected by team:** All lines; ~15 lines modified after initial generation
+(const-column bug fix in Model B; crisis exclusion years; removal of placebo test).
+
+All specification decisions, diagnostic interpretations, and robustness conclusions were verified by the team against econometrics course materials, textbook references, and the M2 EDA findings before inclusion in this submission.
