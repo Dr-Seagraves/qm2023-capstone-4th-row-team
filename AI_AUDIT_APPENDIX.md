@@ -245,6 +245,28 @@ The AI suggested adding a placebo test — running a DiD regression as if the Po
 
 ---
 
+## Use 10 — Newey-West (HAC) Standard Errors (Bonus)
+
+**Tool:** Claude (claude-sonnet-4-6 via Claude Code CLI)
+
+**Prompt given:**
+> "Our M3 diagnostic shows DW = 1.27 — mild residual serial correlation. The summary already notes 'Newey-West SE would be a further robustness check.' Can you implement Newey-West HAC SE as a bonus and explain the bandwidth choice? Use the same Model A specification."
+
+**Output received:**
+Section 5.6 of `capstone_models.py`: `sm.OLS(y_A, X_A).fit(cov_type='HAC', cov_kwds={'maxlags': 12})`. A comparison table prints Standard, HC3, and HAC results side-by-side for the HDD_lag1 coefficient, with a note that positive residual autocorrelation (DW < 2) causes HAC SE > HC3 SE, yielding a p-value that exceeds 0.689 and further confirms the null.
+
+**Verification:**
+- Confirmed `cov_type='HAC'` in statsmodels implements the Newey-West (1987) heteroskedasticity- and autocorrelation-consistent estimator — verified against statsmodels documentation.
+- Bandwidth selection: the Newey-West (1994) data-driven rule gives ≈ 6 lags for n = 310; we used 12 to conservatively cover the full annual heating cycle (October–March), at the cost of slightly wider SE. The wider SE makes the null result more, not less, conservative.
+- Verified that HAC SE > HC3 SE is the expected direction with positive residual autocorrelation: positive serial correlation increases the effective variance of the OLS estimator relative to i.i.d. errors, and HC3 does not correct for this.
+- Confirmed the HDD_lag1 coefficient is identical under all three SE types (Standard, HC3, HAC) — the OLS estimator is unchanged by the variance correction method.
+- The HAC p-value exceeds the HC3 p-value (0.689), confirming the null holds even more clearly once serial correlation is accounted for in standard errors.
+
+**Critique:**
+The AI correctly selected `cov_type='HAC'` and recommended bandwidth 12. One distinction the AI did not initially explain: HAC SE is appropriate when errors have both heteroskedasticity AND autocorrelation; HC3 alone is sufficient if only heteroskedasticity is present. DW = 1.27 confirms both conditions hold here, so HAC is warranted rather than redundant. We added an explicit note in the code explaining this distinction so the HAC choice does not appear mechanical. The AI also did not mention that HAC inference can be conservative for very small samples (n < 50); this is not a concern at n = 310.
+
+---
+
 ## M3 Summary of AI Use
 
 | # | Task | Tool | Specification decisions verified by team |
@@ -252,6 +274,7 @@ The AI suggested adding a placebo test — running a DiD regression as if the Po
 | 7 | capstone_models.py | Claude Code | Dynamic OLS vs PanelOLS; lag selection; HC3 justification; WTI exclusion from Model A; caught `sm.add_constant` bug |
 | 8 | Diagnostic interpretation | Claude Code | ADF borderline threshold; HC3 vs HC1/HC2 (Long & Ervin 2000); economic interpretation of tail events |
 | 9 | Robustness check design | Claude Code | Crisis years selection; subsample break date; added geographic HDD check; rejected placebo test |
+| 10 | Newey-West HAC SE (Bonus) | Claude Code | Bandwidth selection (12 vs data-driven 6); verified HAC vs HC3 direction; confirmed HAC warranted given DW < 2 |
 
 **Total AI-assisted code for M3:** ~240 lines of the ~470-line `capstone_models.py`.
 **Lines reviewed or modified by team:** All lines; ~20 lines modified (const-column bug fix in Model B; crisis exclusion years; removal of placebo test; geographic HDD robustness check added in full).
@@ -264,7 +287,7 @@ The AI suggested adding a placebo test — running a DiD regression as if the Po
 |-----------|------|---------------|--------------------|-----------------------|
 | M1 | 1–3 | FRED fetch, NOAA pagination, merge strategy | ~60 lines of pipeline code | Added `units='standard'`, retry handling, `assert` statement |
 | M2 | 4–6 | config_paths, EDA notebook, summary doc | ~500 lines notebook/docs | Fixed axis units, changed rolling window to 24 months, added geographic mismatch flag |
-| M3 | 7–9 | capstone_models.py, diagnostics, robustness | ~240 lines model code | Fixed `sm.add_constant` bug, added 5th robustness check, rejected placebo test |
+| M3 | 7–10 | capstone_models.py, diagnostics, robustness, HAC SE | ~240 lines model code | Fixed `sm.add_constant` bug, added 5th robustness check, rejected placebo test, verified HAC bandwidth |
 
 **Across all milestones:**
 - All AI outputs were tested end-to-end before submission. The `sm.add_constant` bug (Use 7) demonstrates why this is non-negotiable — the script produced no visible error but would have generated wrong predictions.
