@@ -1,0 +1,14 @@
+Metric,Model_A_HC3,Model_B_OLS,Model_B_RF
+Purpose,Causal inference,Predictive accuracy benchmark,Nonlinear predictive benchmark
+Variables,"AR(1) Price, NEC_HDD, HeatingSeason, Post2014","AR(1) Price, NEC_HDD, WTI, HeatingSeason, Post2014","AR(1) Price, NEC_HDD, WTI, HeatingSeason, Post2014"
+N (estimation),310,248 (train) / 62 (test),248 (train) / 62 (test)
+In-sample R²,0.9580,0.9886 (train),N/A (nonparametric)
+Test-set R²,N/A (full-sample causal model),0.8916,0.8980
+Test-set RMSE ($/gal),N/A,0.2253,0.2186
+AR(1) Price β,0.9752***,0.6220***,Importance: 0.851 (85.1%)
+NEC_HDD (lag 1) β,1.141e-05,5.540e-05,Importance: 0.0048 (0.5%)
+NEC_HDD p-value,0.6885 (not significant),~0 (dominated by WTI),"N/A (importance, not p-value)"
+WTI_Price included,No — excluded to isolate HDD channel,Yes — 5-feature predictive model,Importance: 0.143 (14.3%)
+SE type,HC3 Robust,HC3 Robust,N/A (nonparametric)
+Causal interpretation,Yes — coefficient = causal effect of HDD on price,Limited — WTI included changes interpretation,No — black-box model
+Notes,Baseline causal specification,Linear predictive; same features as RF,Nonlinear; feature importance confirms OLS result

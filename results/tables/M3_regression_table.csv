@@ -8,5 +8,5 @@ HDD × Post-2014   [interaction],—,—,-3.850e-05 (4.557e-05)
 N,310,310,310
 R²,0.9580,0.9580,0.9581
 Adj R²,0.9574,0.9574,0.9574
-SE Type,Standard,HC3 Robust,HC3 Robust
-Entity/Time FE,No / No,No / No,No / No
+SE Type,Standard OLS,HC3 Robust,HC3 Robust
+Entity/Time FE,No / No (single time series),No / No (single time series),No / No (single time series)
