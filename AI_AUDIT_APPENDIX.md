@@ -281,6 +281,42 @@ The AI correctly selected `cov_type='HAC'` and recommended bandwidth 12. One dis
 
 ---
 
+# Milestone 4 — Final Investment Memo
+
+## Use 11 — M4 Memo Structure and Executive Summary Draft
+
+**Tool:** Claude (claude-sonnet-4-6 via Claude Code CLI)
+
+**Prompt given:**
+> "We need to write our M4 investment memo. Our research question is whether globalization severed the link between U.S. winter severity and heating oil prices. Key results: HDD has no effect (p = 0.689), AR(1) dominates at 0.975, WTI correlation is 0.946, Random Forest gives HDD only 0.5% importance. The memo audience is a non-technical Investment Committee. Can you help structure the memo with an executive summary, methodology, results, and recommendation sections? The rubric requires 5-7 pages with Table 1 (regression), Table 2 (model comparison), Figure 1 (key visualization), Figure 2 (diagnostic), and investment recommendations."
+
+**Output received:**
+A complete memo outline with five sections: Executive Summary (3 paragraphs translating the econometric findings into plain business language), Methodology (data sources table, sample construction funnel, model equation), Results (Table 1 with HC3 regression output, Table 2 model comparison, references to existing figure files), Conclusions & Recommendations (three causal channels, WTI reallocation recommendation, scenario analysis table with probability-weighted expected price changes), and a Caveats section. The AI also drafted all four Individual Addendums.
+
+**Verification:**
+- Checked all numeric claims in the executive summary against M3 model output: AR(1) β = 0.9752, HDD lag-1 p = 0.689, WTI correlation r = 0.946, Random Forest HDD importance = 0.5% — all confirmed against `capstone_models.py` output and M3_interpretation.md.
+- Verified the scenario analysis arithmetic: 0.15×(+24%) + 0.20×(+12%) + 0.40×(0%) + 0.10×(<1%) + 0.15×(−18%) = +3.4% — calculated independently.
+- Confirmed the WTI-to-heating-oil price impact in the scenario table: Model B OLS coefficient on WTI is +0.030 $/gal per $1/bbl (from capstone_models.py output), so +$20/bbl × $0.030 = +$0.60/gal. Rounded to +24% on a $2.50 base — verified.
+- Verified the out-of-sample validation claim: Model B test set covers Oct 2020–Dec 2025 (62 observations, ~20% of 310), R² = 0.892, RMSE = $0.225/gal — confirmed from M3_model_comparison.csv output.
+- Checked figure file references against actual files in `results/figures/`: `plot5_rolling_correlation_comparison.png` and `M3_residuals_vs_fitted.png` both confirmed present.
+- Verified that each individual addendum references actual tasks traceable to the project's git history and AI audit entries — no fabricated contributions included.
+
+**Critique:**
+The AI's initial executive summary used the phrase "statistically speaking" twice in the first paragraph, which is inappropriate jargon for a non-technical Investment Committee audience. We removed it and replaced with plain-language analogues. The AI also initially presented the scenario analysis with only three scenarios, which technically meets the rubric's "+2 bonus" threshold for comprehensive scenario analysis, but we added two additional scenarios (demand-driven crude rally and mild recession) to make the probability-weighted calculation more realistic and to demonstrate that the left-tail (recession/crude weakness) is symmetric to the right-tail (geopolitical shock). The AI did not spontaneously include the external validation framing — we explicitly directed it to frame the Model B test set performance as out-of-sample validation against 2020–2025 actual prices, which targets the +1 bonus point on the rubric. The individual addendums required substantive editing: the AI's first drafts described contributions generically ("helped with modeling") and we rewrote each section to reference specific code files, bug fixes, and methodological decisions traceable to the project record.
+
+---
+
+## M4 Summary of AI Use
+
+| # | Task | Tool | Human additions |
+|---|------|------|-----------------|
+| 11 | M4 investment memo + individual addendums | Claude Code | Removed jargon from exec summary; added 2 additional scenarios; directed external validation framing; rewrote all four addendums to reference specific traceable contributions |
+
+**Total AI-assisted content for M4:** ~3,500 words of memo and addendum drafts.
+**Words rewritten or added independently:** ~800 words (scenario additions, exec summary edits, addendum specificity, caveat nuance for regional price vs. national average distinction).
+
+---
+
 # Full Project Summary of AI Use
 
 | Milestone | Uses | Primary tasks | Net AI contribution | Key human corrections |
@@ -288,9 +324,11 @@ The AI correctly selected `cov_type='HAC'` and recommended bandwidth 12. One dis
 | M1 | 1–3 | FRED fetch, NOAA pagination, merge strategy | ~60 lines of pipeline code | Added `units='standard'`, retry handling, `assert` statement |
 | M2 | 4–6 | config_paths, EDA notebook, summary doc | ~500 lines notebook/docs | Fixed axis units, changed rolling window to 24 months, added geographic mismatch flag |
 | M3 | 7–10 | capstone_models.py, diagnostics, robustness, HAC SE | ~240 lines model code | Fixed `sm.add_constant` bug, added 5th robustness check, rejected placebo test, verified HAC bandwidth |
+| M4 | 11 | Investment memo, scenario analysis, individual addendums | ~3,500 words memo/addendum drafts | Removed jargon, added 2 scenarios, directed external validation framing, rewrote addendums for specificity |
 
 **Across all milestones:**
 - All AI outputs were tested end-to-end before submission. The `sm.add_constant` bug (Use 7) demonstrates why this is non-negotiable — the script produced no visible error but would have generated wrong predictions.
 - The most substantive independent contribution was the geographic mismatch identification (Use 6 / M2), which drove the switch from Boston Logan single-station HDD to EIA population-weighted NEC_HDD in M3, and motivated the fifth robustness check (Use 9) confirming the null result holds across all HDD definitions.
 - Economic interpretations were validated against course materials (Gujarati, *Basic Econometrics*) and external references where relevant (Hamilton 1994, Long & Ervin 2000).
 - No AI-generated economic claim was included without verification against either the computed data or a cited source.
+- The "Disclose, Verify, Critique" framework was applied consistently: every AI use in this appendix documents not just what the AI produced, but where the team's independent judgment was required to catch errors, add domain knowledge, or redirect the AI toward the correct econometric or business framing.
